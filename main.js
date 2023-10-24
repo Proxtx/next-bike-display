@@ -15,7 +15,7 @@ for (let place of places) {
   let color = "blue";
   for (let bike of place.bike_list) {
     if (bike.state != "ok") {
-      console.log(bike);
+      console.log("not ok", bike);
       color = "red";
     }
   }
