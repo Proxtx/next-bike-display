@@ -11,8 +11,6 @@ let t = await (
 
 let places = t.countries[0].cities[0].places;
 
-console.log(places);
-
 for (let place of places) {
   let color = "blue";
   for (let bike of place.bike_list) {
@@ -26,5 +24,45 @@ for (let place of places) {
     fillColor: color,
     fillOpacity: 1,
     radius: 5,
+  }).addTo(map);
+}
+
+const read_csv_from_server = async (addr) => {
+  let shapes = await (await fetch(addr)).text();
+  let entries = shapes.split("\n");
+  entries = entries.map((v) => v.split(","));
+  return entries;
+};
+
+let entries = await read_csv_from_server("shapes.txt");
+
+let shapes = {};
+for (let entry of entries) {
+  if (!shapes[entry[0]]) shapes[entry[0]] = [];
+  shapes[entry[0]].push([Number(entry[1]), Number(entry[2])]);
+}
+
+let trips = await read_csv_from_server("trips.txt");
+let routes = await read_csv_from_server("routes.txt");
+
+routes = routes.filter((v) => v[2][0] == "6" && v[2].length == 3);
+routes = routes.map((v) => {
+  let c;
+  trips.forEach((r) => {
+    if (r[0] == v[0]) {
+      c = r[6];
+    }
+  });
+  return c;
+});
+
+for (let shape_name in shapes) {
+  if (!routes.includes(shape_name)) continue;
+  let shape = shapes[shape_name];
+  var firstpolyline = new L.polyline(shape, {
+    color: "red",
+    weight: 3,
+    opacity: 0.5,
+    smoothFactor: 1,
   }).addTo(map);
 }
